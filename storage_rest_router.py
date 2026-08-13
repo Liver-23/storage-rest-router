@@ -63,21 +63,14 @@ _DEFAULT_MAX_BODY_BYTES = 8 * 1024 * 1024
 _GENERIC_BAD_GATEWAY = b"All storage-rest backends failed\n"
 
 
-class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
-    """Return 3xx to the client instead of following Location (SSRF via redirect)."""
-
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        raise urllib.error.HTTPError(req.full_url, code, msg, headers, fp)
-
-
 def _build_http_opener() -> urllib.request.OpenerDirector:
-    """HTTP/HTTPS only: no file/ftp/data handlers, no automatic redirects."""
+    """HTTP/HTTPS only (no file/ftp/data). Follows 3xx like urllib.urlopen."""
     opener = urllib.request.OpenerDirector()
     opener.add_handler(urllib.request.UnknownHandler())
     opener.add_handler(urllib.request.HTTPHandler())
     opener.add_handler(urllib.request.HTTPSHandler())
     opener.add_handler(urllib.request.HTTPDefaultErrorHandler())
-    opener.add_handler(_NoRedirectHandler())
+    opener.add_handler(urllib.request.HTTPRedirectHandler())
     opener.add_handler(urllib.request.HTTPErrorProcessor())
     return opener
 
