@@ -96,7 +96,7 @@ Keep `--listen` on loopback (`127.0.0.1` or `::1`) unless you put another access
 The proxy:
 
 - stays on the configured backend hosts (rejects absolute / scheme-relative request targets)
-- does not follow upstream `Location` redirects
+- follows HTTP(S) 3xx `Location` redirects (needed for gateways such as turbo-gateway.com)
 - talks HTTP/HTTPS only (no `file:` / `ftp:`)
 - caps request bodies (`--max-body-bytes`, default 8 MiB)
 - returns a generic 502 body (details stay in process logs)

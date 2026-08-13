@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import unittest
-import urllib.error
 import urllib.request
 from urllib.parse import urljoin, urlsplit
 
@@ -129,20 +128,12 @@ class ParseHelpersTests(unittest.TestCase):
         self.assertEqual(r._parse_listen("[::1]:18080"), ("::1", 18080))
 
 
-class NoRedirectHandlerTests(unittest.TestCase):
-    def test_redirect_raises_http_error(self) -> None:
-        handler = r._NoRedirectHandler()
-        req = urllib.request.Request("https://ario.ionode.top/x")
-        with self.assertRaises(urllib.error.HTTPError) as ctx:
-            handler.redirect_request(
-                req,
-                fp=None,
-                code=302,
-                msg="Found",
-                headers={},
-                newurl="http://127.0.0.1/",
-            )
-        self.assertEqual(ctx.exception.code, 302)
+class OpenerTests(unittest.TestCase):
+    def test_follows_http_redirects(self) -> None:
+        kinds = {type(h) for h in r._OPENER.handlers}
+        self.assertIn(urllib.request.HTTPRedirectHandler, kinds)
+        self.assertNotIn(urllib.request.FileHandler, kinds)
+        self.assertNotIn(urllib.request.FTPHandler, kinds)
 
 
 if __name__ == "__main__":
